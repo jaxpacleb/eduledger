@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+
+@theme {
+  --color-container-gray: #E0E0E0;
+  --color-card-white: #FFFFFF;
+  --color-icon-color: #10C2F3;
+  --color-border-color: #10C2F3
+}
+
+body {
+  @apply bg-container-gray text-white min-h-screen;
+}
