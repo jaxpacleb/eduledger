@@ -4,24 +4,24 @@ import * as Icons from "lucide-react"
 import { useState } from "react"
 import { seniorHighStructure } from '../MockData/classes'
 
-function ProfileCard({ name, role, visibility }) {
-    return (
-        <div className={`${visibility} overflow-hidden rounded-md lg:rounded-xl shadow-[0_0_6.6px_1px_rgba(0,0,0,0.20)] box-border col-span-2 lg:gap-12 `} >
-            <div className='flex box-border py-3 px-6   bg-[#007F8A] gap-5 lg:items-center'>
-                <div className='self-center'>
-                    <Icons.UserCheck
-                        strokeWidth={1.1}
-                        className='w-8 h-8 text-white'
-                    />
-                </div>
-                <div className='self-center text-white'>
-                    <h6>{name}</h6>
-                    <h6>{role}</h6>
-                </div>
-            </div>
-        </div>
-    )
-}
+// function ProfileCard({ name, role, visibility }) {
+//     return (
+//         <div className={`${visibility} overflow-hidden rounded-md lg:rounded-xl shadow-[0_0_6.6px_1px_rgba(0,0,0,0.20)] box-border col-span-2 lg:gap-12 `} >
+//             <div className='flex box-border py-3 px-6   bg-[#007F8A] gap-5 lg:items-center'>
+//                 <div className='self-center'>
+//                     <Icons.UserCheck
+//                         strokeWidth={1.1}
+//                         className='w-8 h-8 text-white'
+//                     />
+//                 </div>
+//                 <div className='self-center text-white'>
+//                     <h6>{name}</h6>
+//                     <h6>{role}</h6>
+//                 </div>
+//             </div>
+//         </div>
+//     )
+// }
 
 
 function StatCard({ children, iconName, heading, value, iconBg }) {
@@ -252,8 +252,6 @@ function SubjectCard({ track, submitCount, totalCount }) {
     )
 }
 
-
-
 function QueuePage() {
     return (
         <div className='col-span-2'>
@@ -341,22 +339,33 @@ export function RegistrarDashboard() {
         { name: 'Registrar', action: 'verified' }
     ]
 
+    const navItems = [
+        { id: 1, label: 'Home', icon: 'House' },
+        { id: 2, label: 'Queue', icon: 'Menu' },
+        { id: 3, label: 'Grades', icon: 'Check' },
+        { id: 4, label: 'Audit', icon: 'Clock' }
+    ]
+
     function setPageView(pageView) {
         setActivePage(pageView)
     }
 
     return (
         <main className='w-full'>
-            <DashboardHeader name={name} role={role} onSetPage={setPageView} onActivePage={activePage}/>
+            <DashboardHeader
+                name={name}
+                role={role}
+                onSetPage={setPageView}
+                onActivePage={activePage}
+                navItems={navItems}
+            />
 
             <section className='grid gap-x-4 gap-y-4 grid-cols-2 py-4 px-4 box-border lg:flex  lg:flex-col'>
-                <ProfileCard name={name} role={role} visibility='block lg:hidden' />
                 <SearchField />
                 {activePage == 'Home' && <HomePage users={users} />}
                 {activePage == 'Queue' && <QueuePage />}
                 {activePage == 'Grades' && <GradesPage />}
                 {activePage == 'Audit' && <AuditPage users={users} />}
-
             </section>
 
 

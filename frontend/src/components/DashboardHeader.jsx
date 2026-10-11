@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Bell, User, UserCheck, ShieldCheck, Sun, Menu } from 'lucide-react'
 import * as Icons from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 function Logo() {
     return (
@@ -13,7 +14,7 @@ function Logo() {
             </section>
 
             <section className='text-black lg:text-lg text-sm self-center'>
-                <h1 className='font-bold text-sm'>EDULEDGER</h1>
+                <h1 className='font-bold'>EDULEDGER</h1>
                 <h1 className='text-xs'>Heart of Mary High School, Inc.</h1>
             </section>
         </aside>
@@ -45,107 +46,148 @@ function HeaderIcons() {
 
 function ProfileCard({ name, role, visibility }) {
     return (
-        <div className={`lg:flex lg:gap-12`}>
-            <div className={`${visibility} lg:py-2.5 lg:px-6 lg:rounded-xl lg:bg-[#007F8A] lg:flex lg:gap-5 lg:justify-content-center lg:items-center`}>
-                <div>
-                    <UserCheck
-                        size={30}
-                        strokeWidth={1.1}
-                        className='text-white'
-                    />
-                </div>
-                <div className='text-white'>
-                    <h6>{name}</h6>
-                    <h6>{role}</h6>
-                </div>
+        <div
+            className={`${visibility} shadow-[0px_3px_10px_-3px_rgba(0,0,0,0.25)] my-4 py-4 box-border px-3 rounded-md flex items-center justify-evenly bg-[#007F8A] text-white lg:my-1 lg:rounded-xl lg:px-6 lg:py-2`}
+        >
+            <div className="shrink-0">
+                <UserCheck size={30} strokeWidth={1.1} className="text-white" />
+            </div>
+
+            <div className="flex flex-col leading-tight">
+                <span className="text-sm font-semibold">{name}</span>
+                <span className="text-xs text-white/80">{role}</span>
             </div>
         </div>
+    );
+}
+
+function FooterButton({ label, customBorder, customIcon, customFont }) {
+    const Icon = Icons[customIcon]
+
+    const navigate = useNavigate();
+
+    return (
+        <button
+            onClick={() => navigate('/')}
+            className={`${customBorder} ${customFont} cursor-pointer text-sm rounded-md py-3 box-border gap-2 flex items-center justify-center text-gray-700 hover:text-black transition`}
+        >
+            <Icon strokeWidth={1.5} className='w-6 h-6' />
+            {label}
+        </button>
     )
 }
 
 function Button({ iconName, label, changePage, isSelected }) {
     const Icon = Icons[iconName]
+    const selectedButton = 'text-green-700 bg-black text-white';
     return (
         <button
             type="button"
             onClick={changePage}
-            className={`${isSelected ? 'text-green-700' : ''} flex flex-col items-center justify-center text-gray-700 hover:text-black transition`}
+            className={`${isSelected ? selectedButton : 'text-slate-600'} cursor-pointer rounded-md py-3 px-3 box-border gap-4 flex items-center justify-start text-gray-700 hover:text-black transition`}
         >
             <Icon strokeWidth={1.5} className="w-6 h-6" />
-            <span className="text-xs font-medium mt-1">{label}</span>
+            <span className="text-sm font-medium mt-1">{label}</span>
         </button>
     )
 }
 
-function SlidingNavbar({ onToggleMode, onSetPage, onActivePage  }) {
+function SlidingNavbar({ onSetPage, onActivePage, user, navItems }) {
     const [isOpen, setIsOpen] = useState(false);
+
+    const handlePageChange = (page) => {
+        onSetPage(page);
+        setIsOpen(false);
+    };
 
     return (
         <div>
+            {/* Trigger Button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="p-2 cursor-pointer text-gray-700 hover:bg-gray-100 rounded-md shrink-0"
+                className="shrink-0 cursor-pointer rounded-md p-2 text-gray-700 hover:bg-gray-100"
                 aria-label="Open Menu"
             >
-                <Menu strokeWidth={1.5} className='w-6 h-6' />
+                <Menu strokeWidth={1.5} className="h-6 w-6" />
             </button>
 
+            {/* Backdrop */}
             <div
                 onClick={() => setIsOpen(false)}
-                className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
+                className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ${isOpen ? "visible opacity-100" : "invisible opacity-0 pointer-events-none"
                     }`}
             />
 
+            {/* Drawer */}
             <aside
-                className={`fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-50 p-6 flex flex-col justify-between transition-transform duration-300 ease-in-out transform ${isOpen ? "translate-x-0" : "-translate-x-full"
+                className={` fixed top-0 left-0 z-50 flex h-full w-65 flex-col justify-between bg-white px-4 py-4 shadow-xl transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
                     }`}
             >
                 <div>
-                    <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-                        <span className="font-bold text-lg text-gray-800">Menu</span>
+                    {/* NAV HEADER */}
+                    <header className="flex items-center justify-between border-b border-gray-200 pb-3">
+                        <Logo />
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="p-1 text-gray-500 hover:text-black rounded"
+                            className="rounded p-1 text-gray-500 hover:text-black cursor-pointer"
+                            aria-label="Close Menu"
                         >
                             ✕
                         </button>
-                    </div>
+                    </header>
 
-                    <nav className="flex flex-col gap-2 mt-4">
-                        {/* fixed bottom-0 left-0 right-0 z-50 flex items-center justify-evenly bg-white border-t border-gray-200 py-3 */}
-                        <Button changePage={() => onSetPage('Home')} isSelected={onActivePage == 'Home'} label='Home' iconName='House' />
-                        <Button changePage={() =>onSetPage('Queue')} isSelected={onActivePage == 'Queue'} label='Queue' iconName='Logs' />
-                        <Button changePage={() =>onSetPage('Grades')} isSelected={onActivePage == 'Grades'} label='Grades' iconName='SquareCheckBig' />
-                        <Button changePage={() =>onSetPage('Audit')} isSelected={onActivePage == 'Audit'} label='Audit' iconName='Clock' />
+                    <ProfileCard role={user.role} name={user.name} visibility='block lg:hidden' />
+
+                    {/* NAV BUTTONS */}
+                    <nav className="mt-4 flex flex-col">
+                        <h1 className='text-slate-600 my-3'>MENU</h1>
+                        {navItems.map(item =>
+                                <Button
+                                    changePage={() => handlePageChange(item.label)}
+                                    isSelected={onActivePage === item.label}
+                                    label={item.label}
+                                    iconName={item.icon}
+                                />
+                            )
+                        }
                     </nav>
                 </div>
 
-                {/* Footer Link / Logout */}
-                <button
-                    onClick={onToggleMode}
-                    className="w-full py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-md font-semibold"
-                >
-                    Logout
-                </button>
+                {/* NAV FOOTER */}
+                <footer className=' flex flex-col gap-3 border-t-2 border-slate-400 pt-5'>
+                    <FooterButton customBorder='border border-slate-700' customIcon='Sun' label='Light Mode' customFont='border border-slate-700' />
+                    <FooterButton customBorder='border border-red-700' customIcon='LogOut' label='Logout' customFont='text-red-700' />
+                </footer>
             </aside>
         </div>
-
-    )
+    );
 }
 
-export default function DashboardHeader({ name, role, toggleMode, onSetPage, onActivePage }) {
-    return (
-        <header className='gap-3 items-center justify-between box-border border-t-2 border-gray-300 py-3 px-5 flex lg:py-5 shadow-[0px_3px_10px_-3px_rgba(0,0,0,0.25)] lg:px-22 bg-card-white'>
+export default function DashboardHeader({
+    name,
+    role,
+    onSetPage,
+    onActivePage,
+    navItems
+}) {
 
-            <div className='flex items-center gap-3 sm:gap-4'>
-                <SlidingNavbar onSetPage={onSetPage} onActivePage={onActivePage}/>
-                <Logo onToggleMode={toggleMode} />
+    return (
+        <header className="sticky top-0 z-20 h-20 flex items-center justify-between gap-3 border-t-2 border-gray-300 bg-card-white px-5 py-3 shadow-[0px_3px_10px_-3px_rgba(0,0,0,0.25)] lg:px-20 lg:py-5">
+            <div className="flex items-center gap-3 sm:gap-4">
+                {/* Ipinasa ang onToggleMode dito */}
+                <SlidingNavbar
+                    user={{ name, role }}
+                    onSetPage={onSetPage}
+                    onActivePage={onActivePage}
+                    navItems={navItems}
+                />
+                <Logo />
             </div>
 
-            <div className='flex items-center gap-3 sm:gap-6 lg:gap-10 shrink-0'>
-                <ProfileCard name={name} role={role} visibility='hidden lg:block' />
+            <div className="flex shrink-0 items-center gap-3 sm:gap-6 lg:gap-10">
+                <ProfileCard name={name} role={role} visibility="hidden lg:block" />
                 <HeaderIcons />
             </div>
         </header>
-    )
+    );
 }
