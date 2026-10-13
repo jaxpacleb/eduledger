@@ -44,7 +44,7 @@ function HeaderIcons() {
     )
 }
 
-function ProfileCard({ name, role, visibility }) {
+function ProfileCard({ name, role, visibility, lrn }) {
     return (
         <div
             className={`${visibility} shadow-[0px_3px_10px_-3px_rgba(0,0,0,0.25)] my-4 py-4 box-border px-3 rounded-md flex items-center justify-evenly bg-[#007F8A] text-white lg:my-1 lg:rounded-xl lg:px-6 lg:py-2`}
@@ -54,8 +54,10 @@ function ProfileCard({ name, role, visibility }) {
             </div>
 
             <div className="flex flex-col leading-tight">
-                <span className="text-sm font-semibold">{name}</span>
-                <span className="text-xs text-white/80">{role}</span>
+
+                <p className="text-sm font-semibold">{name}</p>
+                {typeof lrn === 'number' && <p className='text-sm text-white/80'>{`LRN: ${lrn}`}</p>}
+                <p className="text-sm text-white/80">{role}</p>
             </div>
         </div>
     );
@@ -92,7 +94,7 @@ function Button({ iconName, label, changePage, isSelected }) {
     )
 }
 
-function SlidingNavbar({ onSetPage, onActivePage, user, navItems }) {
+function SlidingNavbar({ onSetPage, onActivePage, user, navItems, lrn }) {
     const [isOpen, setIsOpen] = useState(false);
 
     const handlePageChange = (page) => {
@@ -114,7 +116,7 @@ function SlidingNavbar({ onSetPage, onActivePage, user, navItems }) {
             {/* Backdrop */}
             <div
                 onClick={() => setIsOpen(false)}
-                className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ${isOpen ? "visible opacity-100" : "invisible opacity-0 pointer-events-none"
+                className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? "visible opacity-100" : "invisible opacity-0 pointer-events-none"
                     }`}
             />
 
@@ -136,19 +138,19 @@ function SlidingNavbar({ onSetPage, onActivePage, user, navItems }) {
                         </button>
                     </header>
 
-                    <ProfileCard role={user.role} name={user.name} visibility='block lg:hidden' />
+                    <ProfileCard role={user.role} name={user.name} lrn={lrn} visibility='block lg:hidden' />
 
                     {/* NAV BUTTONS */}
                     <nav className="mt-4 flex flex-col">
                         <h1 className='text-slate-600 my-3'>MENU</h1>
                         {navItems.map(item =>
-                                <Button
-                                    changePage={() => handlePageChange(item.label)}
-                                    isSelected={onActivePage === item.label}
-                                    label={item.label}
-                                    iconName={item.icon}
-                                />
-                            )
+                            <Button
+                                changePage={() => handlePageChange(item.label)}
+                                isSelected={onActivePage === item.label}
+                                label={item.label}
+                                iconName={item.icon}
+                            />
+                        )
                         }
                     </nav>
                 </div>
@@ -168,14 +170,15 @@ export default function DashboardHeader({
     role,
     onSetPage,
     onActivePage,
+    lrn,
     navItems
 }) {
 
     return (
-        <header className="sticky top-0 z-20 h-20 flex items-center justify-between gap-3 border-t-2 border-gray-300 bg-card-white px-5 py-3 shadow-[0px_3px_10px_-3px_rgba(0,0,0,0.25)] lg:px-20 lg:py-5">
+        <header className="sticky top-0 z-20 h-20 flex items-center justify-between gap-3 border-t-2 border-gray-300 bg-card-white px-5 py-3 border-b border-gray-200 lg:px-20 lg:py-5">
             <div className="flex items-center gap-3 sm:gap-4">
-                {/* Ipinasa ang onToggleMode dito */}
                 <SlidingNavbar
+                    lrn={lrn}
                     user={{ name, role }}
                     onSetPage={onSetPage}
                     onActivePage={onActivePage}
@@ -185,7 +188,7 @@ export default function DashboardHeader({
             </div>
 
             <div className="flex shrink-0 items-center gap-3 sm:gap-6 lg:gap-10">
-                <ProfileCard name={name} role={role} visibility="hidden lg:block" />
+                <ProfileCard name={name} role={role} lrn={lrn} visibility="hidden lg:block" />
                 <HeaderIcons />
             </div>
         </header>
