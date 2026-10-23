@@ -4,25 +4,8 @@ import * as Icons from "lucide-react"
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { seniorHighStructure } from '../MockData/classes'
-
-// function ProfileCard({ name, role, visibility }) {
-//     return (
-//         <div className={`${visibility} overflow-hidden rounded-md lg:rounded-xl shadow-[0_0_6.6px_1px_rgba(0,0,0,0.20)] box-border col-span-2 lg:gap-12 `} >
-//             <div className='flex box-border py-3 px-6   bg-[#007F8A] gap-5 lg:items-center'>
-//                 <div className='self-center'>
-//                     <Icons.UserCheck
-//                         strokeWidth={1.1}
-//                         className='w-8 h-8 text-white'
-//                     />
-//                 </div>
-//                 <div className='self-center text-white'>
-//                     <h6>{name}</h6>
-//                     <h6>{role}</h6>
-//                 </div>
-//             </div>
-//         </div>
-//     )
-// }
+import { fieldValidator } from "../utils/fieldValidator"
+import { UserAvatar } from "../utils/avatar"
 
 
 function StatCard({ children, iconName, heading, value, iconBg }) {
@@ -106,7 +89,6 @@ function Card({ name, lrn }) {
         </main>
     )
 }
-
 
 function Activity({ action, name }) {
     let Icon;
@@ -340,21 +322,29 @@ function AuditPage({ users }) {
 }
 
 // ACCOUNT CARD FOR INDIVIDUAL ADVISER
-function AccountCard({ name, email, picture }) {
+function AccountCard({ name, email = 'Unset', picture, isNewlyAdded, subject }) {
+
+    const unSet = {
+        style: 'text-red-900',
+        isUnset: email == 'UNSET'
+    }
+
     return (
         <div className='shrink-0 bg-white rounded-xl shadow-sm border border-slate-200 divide-y-2 divide-slate-300 px-4 overflow-hidden'>
             {/* Header Section */}
             <header className='flex items-center py-4 px-3 '>
                 {/* Profile Info */}
                 <section className='flex items-center gap-5 min-w-0'>
-                    <img
-                        src={picture}
-                        alt={name || "Profile"}
-                        className='shrink-0 size-12 rounded-full object-cover overflow-hidden bg-slate-800'
+                    <UserAvatar
+                        fullName={name}
+                        picture={picture}
+                        showInitialsFallback={isNewlyAdded}
                     />
+
                     <div className='truncate'>
                         <h1 className='text-slate-900 font-semibold text-lg leading-tight truncate'>{name}</h1>
-                        <p className='text-slate-500 text-sm truncate'>{email}</p>
+                        <p className={`${unSet.isUnset && unSet.style} text-slate-500 text-sm truncate`}>{email ? email : 'Email: Unset'}</p>
+                        {/* FIX TOMORROW THE ADDING NEW ACCOUNT ERROR */}
                     </div>
                 </section>
             </header>
@@ -391,12 +381,12 @@ function SlideUpPanel({ isOpen, onClose, title, children }) {
                     }`}
             />
 
-            {/* 2. Sliding Panel (Umaangat mula sa ilalim) */}
+            {/* 2. Sliding Panel */}
             <div
                 className={`fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-300 ease-out ${isOpen ? 'translate-y-0' : 'translate-y-full'
                     }`}
             >
-                {/* Grab Handle (pang-mobile look) */}
+                {/* Grab Handle */}
                 <div className="flex justify-center pt-3 pb-1">
                     <div className="h-1.5 w-12 rounded-full bg-slate-300" />
                 </div>
@@ -412,7 +402,7 @@ function SlideUpPanel({ isOpen, onClose, title, children }) {
                     </button>
                 </div>
 
-                {/* Panel Body (Scrollable kung mahaba ang form o content) */}
+                {/* Panel Body  */}
                 <div className="flex-1 overflow-y-auto p-6">
                     {children}
                 </div>
@@ -421,23 +411,221 @@ function SlideUpPanel({ isOpen, onClose, title, children }) {
     );
 }
 
+function SkeletonLoader() {
+    return (
+        <div className='shrink-0 bg-white/50 rounded-xl shadow-sm border border-slate-200 divide-y-2 divide-slate-300 px-4 overflow-hidden'>
+            {/* Header Section */}
+            <header className='flex items-center py-4 px-3 '>
+                {/* Profile Info */}
+                <section className='flex items-center gap-5 min-w-0'>
+                    <img
+                        className='shrink-0 size-12 rounded-full object-cover overflow-hidden bg-slate-300'
+                    />
+                    <div className='flex flex-col gap-2'>
+                        <div className='w-40 h-4.5  rounded-full bg-slate-300 bg-slate-300'></div>
+                        <div className={`w-30 h-3.5 rounded-full text-slate-300 bg-slate-300 text-sm truncate`}></div>
+                    </div>
+                </section>
+            </header>
 
-function AccountPage({ accounts }) {
-    const [isPanelOpen, setIsPanelOpen] = useState(false);
-    const [credential, setCredential] = useState({username: '', password: ''})
+            {/* Footer Section */}
+            <footer className='py-3 bg-slate-50/50 flex justify-between'>
+                {/* Status & Role Badges */}
+                <section className='flex flex-col sm:flex-row items-start sm:items-center gap-1.5 shrink-0'>
+                    <span className='px-2.5 py-0.5 rounded-full text-xs bg-slate-100  text-slate-300 bg-slate-200  bg-slate-300'>
+                        Active
+                    </span>
+                    <span className='px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-300 text-slate-300'>
+                        Adviser
+                    </span>
+                </section>
+                <button
+                    type='button'
+                    className='text-sm text-slate-300 font-medium bg-slate-300 bg-slate-300 border border-slate-300  rounded-lg px-3 py-1.5 '
+                >
+                    Reset Password
+                </button>
+            </footer>
+        </div>
+    )
+}
 
-        const handleChange = (e) => {
-            const name = e.target.name;
-            const value = e.target.value;
-            setCredential(values => ({ ...values, [name]: value }))
-        }
+function RegistrarForm({ onSetIsPanelOpen, onAccountCreated }) {
+    const [errors, setErrors] = useState({})
 
-        const insertRecord = async () => {
-            const res = await axios.post('https://17wqdt99-8000.asse.devtunnels.ms/accounts')
-        }
+
+    const [registrarData, setRegistrarData] = useState({
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        username: '',
+        confirmPassword: ''
+    })
+
+    const insertRegistarRecord = async () => {
+        const res = await axios.post(`https://17wqdt99-8000.asse.devtunnels.ms/accounts`, registrarData)
+        console.log(res.data.data)
+        onAccountCreated({
+            name: {
+                first: [registrarData.firstName, registrarData.middleName].filter(Boolean).join(' '),
+                last: registrarData.lastName,
+            },
+            email: 'Unset',
+            picture: null,
+            isNewlyAdded: true,
+        })
+        onSetIsPanelOpen(false)
+    }
+
+    const handleRegistrarChange = (e) => {
+        const { name, value } = e.target
+
+        setRegistrarData(prev => ({ ...prev, [name]: value }))
+        setErrors(prev => ({
+            ...prev,
+            [name]: fieldValidator(name, value),
+        }))
+    }
+
+    const handleRegistrarSubmit = (e) => {
+        e.preventDefault()
+        console.log('Adviser Form Data:', registrarData);
+        insertRegistarRecord()
+    }
 
     return (
-        <div className=' flex flex-col overflow-hidden '>
+        <div>
+            <form className="grid grid-cols-2 gap-4" onSubmit={handleRegistrarSubmit}>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">First Name</label>
+                    <input
+                        type="text"
+                        name='firstName'
+                        onChange={handleRegistrarChange}
+                        value={registrarData.firstName}
+                        className="w-full text-black rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none"
+                    />
+                    {errors.firstName && (
+                        <p className='text-red-800 font-semibold text-sm'>
+                            {errors.firstName}
+                        </p>
+                    )}
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Middle Name</label>
+                    <input
+                        type="text"
+                        name='middleName'
+                        value={registrarData.middleName}
+                        onChange={handleRegistrarChange}
+                        className="w-full text-black rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none"
+                    />
+                    {errors.middleName && (
+                        <p className='text-red-800 font-semibold text-sm'>
+                            {errors.middleName}
+                        </p>)}
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
+                    <input
+                        type="text"
+                        name='lastName'
+                        value={registrarData.lastName}
+                        onChange={handleRegistrarChange}
+                        className="w-full text-black rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none"
+                    />
+                    {errors.lastName && (
+                        <p className='text-red-800 font-semibold text-sm'>
+                            {errors.lastName}
+                        </p>)}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                    <input
+                        type="text"
+                        name='username'
+                        value={registrarData.username}
+                        onChange={handleRegistrarChange}
+                        className="w-full text-black rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none"
+                    />
+                    {errors.username && (
+                        <p className='text-red-800 font-semibold text-sm'>{errors.username}</p>
+                    )}
+                </div>
+
+
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <input
+                        type="text"
+                        name="password"
+                        // value={registrarData.password}
+                        onChange={handleRegistrarChange}
+                        className="w-full text-black rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none"
+                    />
+                    {errors.username && (
+                        <p className='text-red-800 font-semibold text-sm'>{errors.username}</p>)}
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Confirm Password</label>
+                    <input
+                        type="text"
+                        name="confirmPassword"
+                        value={registrarData.confirmPassword}
+                        onChange={handleRegistrarChange}
+                        className="w-full text-black rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none"
+                    />
+
+                    {errors.username && (
+                        <p className='text-red-800 font-semibold text-sm'>{errors.confirmPassword}</p>)}
+                </div>
+
+
+                <div className="flex justify-end gap-3 col-span-2 mt-4 pt-3 border-t border-slate-100">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setRegistrarData({
+                                firstName: '',
+                                middleName: '',
+                                lastName: '',
+                                username: '',
+                                password: '',
+                                confirmPassword: ''
+                            })
+                            onSetIsPanelOpen(false)
+                        }}
+                        className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 transition"
+                    >
+                        Save Account
+                    </button>
+                </div>
+            </form></div>
+    )
+}
+
+function AdviserForm() {
+    return (
+        <div></div>
+    )
+}
+
+function AccountPage({ accounts, onLoad, onLoadError, onAccountCreated }) {
+    const [isPanelOpen, setIsPanelOpen] = useState(false);
+    const [selectedRole, setSelectedRole] = useState('Registrar')
+
+    return (
+        <div className=' flex flex-col h-full overflow-hidden '>
 
             {/* HEADER: Dikit agad sa DashboardHeader, hindi mag-i-scroll dahil sa shrink-0 */}
             <header className='shrink-0 flex flex-col bg-white px-6 py-3 gap-4 border-b border-gray-400'>
@@ -457,14 +645,15 @@ function AccountPage({ accounts }) {
                 <SearchField placeholder='Search Teacher/Adviser' />
             </header>
 
-            {/* SECTION: Dito lang mag-i-scroll ang buong listahan */}
-            <section className='bg-slate-200 flex-1 overflow-y-auto max-h-screen py-5 px-4 flex flex-col gap-4'>
-                {accounts.map(field =>
+            {/* SCROLLABLE LIST */}
+            <section className={`${onLoad && 'animate-pulse'} bg-slate-200 flex-1 overflow-y-auto max-h-screen py-5 px-4 flex flex-col gap-4`}>
+                {onLoad ? <SkeletonLoader /> : accounts.map(field =>
                     <>
                         <AccountCard
-                            name={`${field.name.first} ${field.name.last}`}
+                            name={[field.name.first, field.name.middle, field.name.last].filter(Boolean).join(' ')}
                             email={field.email}
-                            picture={field.picture.medium}
+                            picture={field.picture?.medium ?? field.picture}
+                            isNewlyAdded={field.isNewlyAdded}
                         />
                     </>
                 )}
@@ -473,54 +662,15 @@ function AccountPage({ accounts }) {
             <SlideUpPanel
                 isOpen={isPanelOpen}
                 onClose={() => setIsPanelOpen(false)}
-                title="Add New Account"
+                title="Add Account"
             >
-                {/* Anumang form o inputs na ilalagay mo sa loob */}
-                <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
-                        <input
-                            type="text"
-                            className="w-full text-black rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none"
-                        />
-                    </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                        <input
-                            type="text"
-                            className="w-full text-black rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none"
-                        />
-                    </div>
+                <nav className='flex gap-3'>
+                    <button className={`${selectedRole == 'Registrar' ? 'bg-slate-800 text-white' : 'bg-white border border-black text-black'}   py-2 px-10 rounded-xl`} onClick={() => setSelectedRole('Registrar')}>Registrar</button>
+                    <button className={`${selectedRole == 'Adviser' ? 'bg-slate-800 text-white' : 'bg-white border border-black text-black'}  border border-slate-800 py-2 px-10 rounded-xl`} onClick={() => setSelectedRole('Adviser')}>Adviser</button>
+                </nav>
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Confirm Password</label>
-                        <input
-                            type="text"
-                            className="w-full text-black rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none"
-                        />
-                    </div>
-
-                    <p>{credential.username}</p>
-                    <p>{credential.password}</p>
-
-                    <div className="flex justify-end gap-3 mt-4 pt-3 border-t border-slate-100">
-                        <button
-                            type="button"
-                            onClick={() => setIsPanelOpen(false)}
-                            className="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            onClick={ }
-                            className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 transition"
-                        >
-                            Save Account
-                        </button>
-                    </div>
-                </form>
+                {selectedRole == 'Registrar' ? <RegistrarForm onSetIsPanelOpen={setIsPanelOpen} onAccountCreated={onAccountCreated} /> : <AdviserForm />}
             </SlideUpPanel>
         </div>
     )
@@ -529,6 +679,8 @@ function AccountPage({ accounts }) {
 export function RegistrarDashboard() {
     const { name, role } = roles[0]
     const [activePage, setActivePage] = useState('Home');
+    const [isLoading, setIsLoading] = useState(true)
+    const [loadError, setLoadError] = useState('')
     const [accounts, setAccounts] = useState([])
 
     const users = [
@@ -549,28 +701,31 @@ export function RegistrarDashboard() {
         setActivePage(pageView)
     }
 
+    function addAccount(account) {
+        setAccounts(currentAccounts => [account, ...currentAccounts])
+    }
+
     const fetchData = async (pageNumber) => {
         try {
-            const res = await axios.get('https://17wqdt99-8000.asse.devtunnels.ms/', {
-                params: {
-                    page: pageNumber
-                }
-            }
-            )
-            console.log(res.data.profiles)
-            setAccounts(res.data.profiles)
+            setLoadError('')
+            const res = await axios.get(`https://17wqdt99-8000.asse.devtunnels.ms/`)
+
+            console.log(res.data.Message)
+            setLoadError(res.data.Message)
         } catch (err) {
-            console.log(err)
+            console.error('Failed to load accounts:', err)
+            setLoadError('Hindi ma-load ang accounts. Pakisuri ang network o API access.')
+        } finally {
+            setIsLoading(false)
         }
     }
 
     useEffect(() => {
-        fetchData(1)
+        fetchData(1);
     }, [])
 
     return (
         <main className='h-screen overflow-hidden flex flex-col bg-gray-50'>
-            {/* Dashboard Header - nakapirme sa pinakataas */}
             <DashboardHeader
                 name={name}
                 role={role}
@@ -579,14 +734,19 @@ export function RegistrarDashboard() {
                 navItems={navItems}
             />
 
-            {/* Inalis ang py-4 para dumikit agad sa header. 
-                Ginawang flex-1 overflow-hidden para dito pumasok ang mga pages nang buo ang taas. */}
             <div className='flex-1 overflow-hidden w-full'>
                 {activePage == 'Home' && <HomePage users={users} />}
                 {activePage == 'Queue' && <QueuePage />}
                 {activePage == 'Grades' && <GradesPage />}
                 {activePage == 'Audit Log' && <AuditPage users={users} />}
-                {activePage == 'Accounts' && <AccountPage accounts={accounts} />}
+                {activePage == 'Accounts' && (
+                    <AccountPage
+                        accounts={accounts}
+                        onLoad={isLoading}
+                        onLoadError={loadError}
+                        onAccountCreated={addAccount}
+                    />
+                )}
             </div>
         </main>
     )

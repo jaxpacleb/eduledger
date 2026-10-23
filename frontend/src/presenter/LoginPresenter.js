@@ -5,7 +5,6 @@ const LoginPresenter = {
         
 
         try {
-
             const data = await UserModel.login(
                 username,
                 password
